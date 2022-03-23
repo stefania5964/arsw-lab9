@@ -38,18 +38,29 @@ var app = (function () {
             console.log('Connected: ' + frame);
             stompClient.subscribe('/topic/newpoint', function (eventbody) {
                 var jsonObject=JSON.parse(eventbody.body);
-                alert(jsonObject);
+                //alert(jsonObject);
+                addPointToCanvas(jsonObject);
+                console.log(jsonObject);
             });
         });
     };
-    
+
+    var loadEventPointer = function () {
+        if (window.PointerEvent) {
+            canvas.addEventListener("pointerdown", event => {
+                const pt = getMousePosition(event);
+                addPointToCanvas(pt);
+                stompClient.send("/topic/newpoint", {}, JSON.stringify(pt));
+            })
+        }
+    }
     
 
     return {
 
         init: function () {
             var can = document.getElementById("canvas");
-            
+            loadEventPointer();
             //websocket connection
             connectAndSubscribe();
         },
