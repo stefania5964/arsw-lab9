@@ -8,7 +8,9 @@ var app = (function () {
     }
     
     var stompClient = null;
-    var idDraw = null;
+    var idDraw = null;    
+    var canvas = document.getElementById("canvas");
+    var ctx = canvas.getContext("2d");
     var idS = document.querySelector("#idDraw");
 
     var loadEventPointer = function () {
@@ -23,19 +25,27 @@ var app = (function () {
     }
 
     var eventPoint = function (event){
-        const pt = getMousePosition(event);        
-        addPointToCanvas(pt);
-        if(idDraw) stompClient.send(`/topic/newpoint.${idDraw}`, {}, JSON.stringify(pt));
+        const {x,y} = getMousePosition(event);                
+        if(idDraw) app.publishPoint(x,y);
     }
 
-    var addPointToCanvas = function (point) {        
-        var canvas = document.getElementById("canvas");
-        var ctx = canvas.getContext("2d");
+    var addPointToCanvas = function (point) {                
         ctx.beginPath();
         ctx.arc(point.x, point.y, 3, 0, 2 * Math.PI);
         ctx.stroke();
     };
     
+    var drawPolygon = function(points){
+        canvas.width = canvas.width;
+        var {x,y} = points[0];
+        ctx.moveTo(x,y);
+        points.forEach(point => {            
+            ctx.arc(point.x, point.y, 3, 0, 2 * Math.PI);
+            ctx.lineTo(point.x,point.y);
+        });
+        ctx.lineTo(x,y);
+        ctx.stroke();
+    }
     
     var getMousePosition = function (evt) {
         canvas = document.getElementById("canvas");
@@ -57,18 +67,29 @@ var app = (function () {
             console.log('Connected: ' + frame);
             canvas.width = canvas.width;
             stompClient.subscribe(`/topic/newpoint.${idDraw}`, function (eventbody) {
-                const jsonObject=JSON.parse(eventbody.body);
-                //alert(jsonObject);
-                console.log(jsonObject);
-                addPointToCanvas(jsonObject);                
+                const point=JSON.parse(eventbody.body);                
+                console.log(point);
+                addPointToCanvas(point);                
             });
+            stompClient.subscribe(`/topic/newpolygon.${idDraw}`, function (eventbody) {
+                const points = JSON.parse(eventbody.body);
+                drawPolygon(points);
+            });
+            stompClient.subscribe(`/topic/queue.${idDraw}`, function (eventbody) {
+                const points = JSON.parse(eventbody.body);
+                if( points.length  < 3 ){
+                    points.forEach(point => addPointToCanvas(point));
+                    return;
+                }
+                drawPolygon(points);
+            });
+            //stompClient.send(`/app/queue.${idDraw}`, {});
         });
     };
 
     return {
 
-        init: function () {
-            //var can = document.getElementById("canvas");
+        init: function () {            
             loadEventPointer();                        
         },
 
@@ -78,7 +99,7 @@ var app = (function () {
             addPointToCanvas(pt);
 
             //publicar el evento
-            stompClient.send(`/topic/newpoint.${idDraw}`, {}, JSON.stringify(pt));
+            stompClient.send(`/app/newpoint.${idDraw}`, {}, JSON.stringify(pt));
         },
 
         disconnect: function () {
