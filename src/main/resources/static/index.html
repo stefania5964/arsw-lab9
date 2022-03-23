@@ -19,11 +19,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     <head>
         <title>TODO supply a title</title>
         <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">        
         <script src="/webjars/jquery/jquery.min.js"></script>
         <script src="/webjars/sockjs-client/sockjs.min.js"></script>
         <script src="/webjars/stomp-websocket/stomp.min.js"></script>
-        <script src="/app.js"></script>
+        
 
     </head>
 
@@ -33,6 +33,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         <!-- X:<input id="x" type="number"/>
         Y:<input id="y" type="number"/>        
         <button onclick="app.publishPoint($('#x').val(),$('#y').val())">Send point</button> -->
-        <canvas id="canvas" width="800" height="600"></canvas>
+        Id dibujo:<input id="idDraw" type="number"/>
+        <button class="btn btn-primary" onclick="app.publishDraw($('idDraw').val())">Conectarse</button>
+        <canvas id="canvas" width="800" height="600" style="border: 1px solid #000"></canvas>
     </body>
+    <script src="/app.js"></script>
 </html>

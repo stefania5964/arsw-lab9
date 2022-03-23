@@ -8,6 +8,25 @@ var app = (function () {
     }
     
     var stompClient = null;
+    var idDraw = null;
+    var idS = document.querySelector("#idDraw");
+
+    var loadEventPointer = function () {
+        if (idS) idS.addEventListener('change', updateId);        
+        const eventCanvas = (window.PointerEvent)?'pointerdown':'mousedown';
+        canvas.addEventListener(eventCanvas, eventPoint);
+    }
+    
+    var updateId = function(event){
+        idDraw = event.target.value;
+        console.log(`nuevoValor ${idDraw}`);
+    }
+
+    var eventPoint = function (event){
+        const pt = getMousePosition(event);        
+        addPointToCanvas(pt);
+        if(idDraw) stompClient.send(`/topic/newpoint.${idDraw}`, {}, JSON.stringify(pt));
+    }
 
     var addPointToCanvas = function (point) {        
         var canvas = document.getElementById("canvas");
@@ -36,33 +55,21 @@ var app = (function () {
         //subscribe to /topic/TOPICXX when connections succeed
         stompClient.connect({}, function (frame) {
             console.log('Connected: ' + frame);
-            stompClient.subscribe('/topic/newpoint', function (eventbody) {
+            canvas.width = canvas.width;
+            stompClient.subscribe(`/topic/newpoint.${idDraw}`, function (eventbody) {
                 var jsonObject=JSON.parse(eventbody.body);
                 //alert(jsonObject);
-                addPointToCanvas(jsonObject);
                 console.log(jsonObject);
+                addPointToCanvas(jsonObject);                
             });
         });
     };
 
-    var loadEventPointer = function () {
-        if (window.PointerEvent) {
-            canvas.addEventListener("pointerdown", event => {
-                const pt = getMousePosition(event);
-                addPointToCanvas(pt);
-                stompClient.send("/topic/newpoint", {}, JSON.stringify(pt));
-            })
-        }
-    }
-    
-
     return {
 
         init: function () {
-            var can = document.getElementById("canvas");
-            loadEventPointer();
-            //websocket connection
-            connectAndSubscribe();
+            //var can = document.getElementById("canvas");
+            loadEventPointer();                        
         },
 
         publishPoint: function(px,py){
@@ -71,7 +78,7 @@ var app = (function () {
             addPointToCanvas(pt);
 
             //publicar el evento
-            stompClient.send("/topic/newpoint", {}, JSON.stringify(pt));
+            stompClient.send(`/topic/newpoint.${idDraw}`, {}, JSON.stringify(pt));
         },
 
         disconnect: function () {
@@ -80,6 +87,11 @@ var app = (function () {
             }
             setConnected(false);
             console.log("Disconnected");
+        },
+
+        publishDraw(id){
+            idDraw = id;
+            connectAndSubscribe();
         }
     };
 
