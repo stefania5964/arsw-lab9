@@ -57,7 +57,7 @@ var app = (function () {
             console.log('Connected: ' + frame);
             canvas.width = canvas.width;
             stompClient.subscribe(`/topic/newpoint.${idDraw}`, function (eventbody) {
-                var jsonObject=JSON.parse(eventbody.body);
+                const jsonObject=JSON.parse(eventbody.body);
                 //alert(jsonObject);
                 console.log(jsonObject);
                 addPointToCanvas(jsonObject);                
