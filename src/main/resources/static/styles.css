@@ -1,1 +1,14 @@
+body{
+}
+.main{
+    background-color: rgb(88, 141, 201);
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+#canva{
+    border: 1px solid #000;
+    background-color: #fff;
 
+}
