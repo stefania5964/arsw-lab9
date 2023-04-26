@@ -21,6 +21,8 @@ package edu.eci.arsw.collabpaint;
  * @author hcadavid
  */
 import java.util.logging.Logger;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.util.AntPathMatcher;
@@ -43,7 +45,12 @@ public class CollabPaintWebSocketConfig extends AbstractWebSocketMessageBrokerCo
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/stompendpoint").setAllowedOrigins("*").withSockJS();
     }
-        
+    @Value("${sock.host}")
+    private String host;
+
+    @Value("${sock.port}")
+    private int port;
+
 }
     
 
